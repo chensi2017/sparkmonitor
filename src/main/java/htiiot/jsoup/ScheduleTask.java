@@ -5,8 +5,8 @@ import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,7 +43,17 @@ public class ScheduleTask extends TimerTask{
                     log.info("当前未处理的批次数量: "+result+" ,未达到预警阈值.");
                 }
             }
-        }catch (Exception e){
+        }catch (UnknownHostException e){
+            log.error("url地址不正确或spark应用已经终止");
+            log.error(e);
+            Map<String, String> sender = new HashMap<>();
+            sender.put("email_name", prop.getProperty("emailUserName"));
+            sender.put("email_password", prop.getProperty("emailPassword"));
+            List<String> list = new ArrayList<String>();
+            String content = "url地址不正确或spark应用已经终止\n"+e;
+            MessageSendUtil.sendEMAIL(sender, list, content, prop.getProperty("email.topic"));
+        }
+        catch (Exception e){
             log.error(e);
         }
     }
